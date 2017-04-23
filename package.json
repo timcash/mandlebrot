@@ -1,0 +1,23 @@
+{
+  "name": "mandlebrot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/timcash/mandlebrot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/timcash/mandlebrot/issues"
+  },
+  "homepage": "https://github.com/timcash/mandlebrot#readme",
+  "dependencies": {
+    "chroma-js": "^1.3.3",
+    "node-gd": "^1.5.0"
+  }
+}
