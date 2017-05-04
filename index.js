@@ -17,16 +17,12 @@ const white = 'white'
 //const C_SCALE = chroma.scale(colors.reverse())
 const colors = [chocolate,yellowOrange,lightTeal,deepOcean]
 const C_SCALE = chroma.scale(colors.reverse())
-// let canvas = document.getElementById('canvas')
-// let ctx = canvas.getContext('2d')
-// ctx.font = '24px sans-serif'
-// ctx.fillStyle = '#ccc'
 let pi2 = 2 * Math.PI
-const CANVAS_HEIGHT = 360
-const CANVAS_WIDTH = 240
-// ctx.canvas.width = CANVAS_WIDTH
-// ctx.canvas.height = CANVAS_HEIGHT
-const MAX_ITERS = 1000
+// const CANVAS_HEIGHT = 10 * 36
+// const CANVAS_WIDTH = 10 * 24
+const CANVAS_HEIGHT = 72 * 2 * 36
+const CANVAS_WIDTH = 72 * 2 * 24
+const MAX_ITERS = 1500
 const TOTAL_PX = CANVAS_WIDTH * CANVAS_HEIGHT
 const RATIO = CANVAS_HEIGHT / CANVAS_WIDTH
 const ln = Math.log
@@ -42,16 +38,16 @@ const juliaB = 0.156
 // let CENTER = [0.36330877028148983, -0.31721691316595024]
 
 // Portal
-let ZOOM = 0.00009282296880390604
-let CENTER = [-0.7527003524317856, -0.04307864384625851]
+// let ZOOM = 0.00009282296880390604
+// let CENTER = [-0.7527003524317856, -0.04307864384625851]
 
 // Desert Oasis
 // let ZOOM = 0.000010108421302745368
 // let CENTER = [-0.7527583370839379, -0.0430666696832828]
 
 // Hook
-// let ZOOM = 0.0025829359380000008
-// let CENTER = [0.2872320833755557, -0.012069614516666667]
+let ZOOM = 0.0025829359380000008
+let CENTER = [0.2872320833755557, -0.012069614516666667]
 
 // lightning
 // let ZOOM = 0.007827078600000002
@@ -88,7 +84,6 @@ function buildMandleData(width, height, center, zoom) {
   let mData = []
   let histo = []
   let counter = 0
-  let percent = width * height / 50
 
   for (let i = 0; i < MAX_ITERS; i++) {
     histo.push(0)
@@ -97,7 +92,7 @@ function buildMandleData(width, height, center, zoom) {
     for (let x = 0; x < width; x++) {
       const [a, b] = toComplexAtCenterAndZoom(x,y, width, height, center, zoom)
       const loops = loopMandle([a, b])
-      //if (counter % percent === 0) console.log('Index', counter)
+      if (counter % 1000 === 0) console.log('Index', counter)
       histo[floor(loops)] += 1
       mData.push(loops)
       counter += 1
@@ -123,11 +118,6 @@ function histoTheData(temps, histo) {
 }
 
 function draw() {
-  // ctx.fillStyle = 'rgb(255,50,255)'
-  // ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
-  //let imageData = ctx.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
-
-  //ctx.putImageData(imageData, 0, 0)
   const [temps, histo] = buildMandleData(CANVAS_WIDTH, CANVAS_HEIGHT, CENTER, ZOOM)
   const histoedData = histoTheData(temps, histo)
 
@@ -149,17 +139,6 @@ function draw() {
     })
   });
 }
-
-
-
-// window.draw = draw
-// window.onmousedown = (e) => {
-//   const [a,b] = toComplexAtCenterAndZoom(e.clientX,e.clientY,CANVAS_WIDTH, CANVAS_HEIGHT, CENTER,ZOOM)
-//   ZOOM = ZOOM * 0.33
-//   CENTER = [a,b]
-//   console.log(`let ZOOM = ${ZOOM}\nlet CENTER = [${a}, ${b}]`)
-//   draw()
-// }
 
 function toComplexAtCenterAndZoom(x,y,w,h,center,zoom) {
   let top = center[1] - (zoom * RATIO)
