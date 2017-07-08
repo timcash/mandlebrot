@@ -11,51 +11,56 @@ const chocolate = '#D2691E'
 const gold = '#F8DC57'
 const black = 'black'
 const white = 'white'
-//const colors = [deepBlue,gold,burntOrange,gold,deepBlue]
-//const C_SCALE = chroma.scale('Spectral').domain([1,0])
-//const C_SCALE = chroma.bezier(colors);
-//const C_SCALE = chroma.scale(colors.reverse())
-const colors = [chocolate,yellowOrange,lightTeal,deepOcean]
-const C_SCALE = chroma.scale(colors.reverse())
+
 let pi2 = 2 * Math.PI
-// const CANVAS_HEIGHT = 10 * 36
-// const CANVAS_WIDTH = 10 * 24
-const CANVAS_HEIGHT = 72 * 2 * 36
-const CANVAS_WIDTH = 72 * 2 * 24
-const MAX_ITERS = 1500
+const DPI = 72 * 2
+// const CANVAS_HEIGHT = DPI * 35.75
+// const CANVAS_WIDTH = DPI * 24
+const CANVAS_HEIGHT = DPI * 9
+const CANVAS_WIDTH = DPI * 6
+const MAX_ITERS = 10 * 1000
 const TOTAL_PX = CANVAS_WIDTH * CANVAS_HEIGHT
 const RATIO = CANVAS_HEIGHT / CANVAS_WIDTH
 const ln = Math.log
 const floor = Math.floor
 const ln2 = ln(2)
-const juliaA = -0.8
-const juliaB = 0.156
+// const juliaA = -0.4
+// const juliaB = 0.6
 // let CENTER = [0,0]
-// let ZOOM = 2
+// let ZOOM = 0.5
+
+// julia
+// const ZOOM = 0.000006203954835888166
+// //const ZOOM = 0.000006202934835887166
+// const CENTER = [-1.7692336509013211,-0.0034128997612515775]
 
 // fish
 // let ZOOM = 0.0008523688595400003
 // let CENTER = [0.36330877028148983, -0.31721691316595024]
-
-// Portal
-// let ZOOM = 0.00009282296880390604
-// let CENTER = [-0.7527003524317856, -0.04307864384625851]
-
+//
+//Portal
+let ZOOM = 0.00009282296880390604
+let CENTER = [-0.7527003524317856, -0.04307864384625851]
+//
 // Desert Oasis
 // let ZOOM = 0.000010108421302745368
 // let CENTER = [-0.7527583370839379, -0.0430666696832828]
-
+//
 // Hook
-let ZOOM = 0.0025829359380000008
-let CENTER = [0.2872320833755557, -0.012069614516666667]
-
+// let ZOOM = 0.0025829359380000008
+// let CENTER = [0.2872320833755557, -0.012069614516666667]
+//
 // lightning
 // let ZOOM = 0.007827078600000002
 // let CENTER = [-0.8636861242222222, -0.2732245544444446]
-
+//
 // swirls around mini mandle
 // let ZOOM = 0.000055864611
 // let CENTER = [-0.7436429465554844, -0.13182541971477443]
+//
+// mandle center seahorses
+// const ZOOM = 1.851751637425243e-8
+// const CENTER = [-1.7692336411443383,-0.0034129130320693594]
 
 function loopMandle(c) {
   let x0 = c[0]
@@ -117,24 +122,58 @@ function histoTheData(temps, histo) {
   return hues
 }
 
-function draw() {
+async function draw() {
+
+  const scales = [
+    //forest
+    //chroma.scale(['white', 'lightyellow', 'yellow', 'red', 'black', 'red', 'yellow', 'red', 'black', 'red', 'yellow', 'red', 'black']).mode('hsl').domain([0,0.7,1]),
+    //ocean
+    chroma.scale(['white','dfd2c1', 'white', 'b7c0a5', '67d29e', '0fd4cb', '3884cf', '264890', '3884cf', '0fd4cb', '67d29e', 'b7c0a5', 'white','67d29e', '0fd4cb', '3884cf']).mode('hsl'),
+    //lobster
+    chroma.scale(['#E24931','#CFB382','#BBE3D8','#8DCFCE','#102A44','#8DCFCE','#BBE3D8']).mode('hsl').domain([0,0.7,1])
+  ]
+
   const [temps, histo] = buildMandleData(CANVAS_WIDTH, CANVAS_HEIGHT, CENTER, ZOOM)
   const histoedData = histoTheData(temps, histo)
+  for(let i = 0; i < scales.length; i++)
+  {
+    const name = `./images/${Date.now()}.png`
+    const imageResult = await color(scales[i], temps, histoedData)
+    const saveResult = await saveImage(imageResult, name)
+    console.log(`${name} saved`)
+  }
+}
 
-  gd.createTrueColor(CANVAS_WIDTH, CANVAS_HEIGHT, function(error, image) {
-    if (error) throw error;
-    for (let i = 0; i < histoedData.length; i ++) {
-      const iters = temps[i]
-      const temp = histoedData[i]
-      let rgb = C_SCALE(temp).rgb()
-      if (iters === MAX_ITERS) rgb = [0, 0, 0]
-      const col = i % CANVAS_WIDTH
-      const row = Math.floor(i / CANVAS_WIDTH)
-      image.setPixel(col, row, gd.trueColor(rgb[0], rgb[1],rgb[2]))
-    }
+function color(c_scale, temps, histoedData) {
+  return new Promise(function(resolve, reject) {
+    gd.createTrueColor(CANVAS_WIDTH, CANVAS_HEIGHT, function(error, image) {
+      const white = [255, 255, 255]
+      if (error) reject(error.toString());
+      for (let i = 0; i < histoedData.length; i ++) {
+        if (i % 1000 === 0) console.log('coloring', i)
+        const iters = temps[i]
+        const temp = histoedData[i]
+        let rgb = c_scale(temp).rgb()
+        if (iters === MAX_ITERS) rgb = [0, 0, 0]
+        const col = i % CANVAS_WIDTH
+        const row = Math.floor(i / CANVAS_WIDTH)
+        if (col < DPI) rgb = white
+        if (col > CANVAS_WIDTH - DPI) rgb = white
+        if (row < DPI) rgb = white
+        if (row > CANVAS_HEIGHT - DPI) rgb = white
+        image.setPixel(col, row, gd.trueColor(rgb[0], rgb[1],rgb[2]))
+      }
+      resolve(image)
+    });
+  });
+}
 
-    image.savePng('./test.png', 0, function(error) {
-      if (error) throw error;
+function saveImage (image, name) {
+  return new Promise(function(resolve, reject) {
+    image.savePng(name, 0, function(error) {
+
+      if (error) reject(error.toString())
+      resolve()
       image.destroy();
     })
   });
