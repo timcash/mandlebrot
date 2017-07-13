@@ -14,7 +14,7 @@ const white = 'white'
 
 let pi2 = 2 * Math.PI
 const DPI = 72 * 2
-// const CANVAS_HEIGHT = DPI * 35.75
+// const CANVAS_HEIGHT = DPI * 36
 // const CANVAS_WIDTH = DPI * 24
 const CANVAS_HEIGHT = DPI * 9
 const CANVAS_WIDTH = DPI * 6
@@ -30,17 +30,17 @@ const ln2 = ln(2)
 // let ZOOM = 0.5
 
 // julia
-// const ZOOM = 0.000006203954835888166
+// const ZOOM = 0.000006204954835888166
 // //const ZOOM = 0.000006202934835887166
 // const CENTER = [-1.7692336509013211,-0.0034128997612515775]
 
 // fish
-// let ZOOM = 0.0008523688595400003
-// let CENTER = [0.36330877028148983, -0.31721691316595024]
+let ZOOM = 0.0008523688595400003
+let CENTER = [0.36330877028148983, -0.31721691316595024]
 //
 //Portal
-let ZOOM = 0.00009282296880390604
-let CENTER = [-0.7527003524317856, -0.04307864384625851]
+// let ZOOM = 0.00009282496880390604
+// let CENTER = [-0.7527003524317856, -0.04307864384625851]
 //
 // Desert Oasis
 // let ZOOM = 0.000010108421302745368
@@ -122,15 +122,85 @@ function histoTheData(temps, histo) {
   return hues
 }
 
-async function draw() {
+function makeScale (colors) {
+  let position = 0
+  let inc = 1
+  const cLength = colors.length
+  const items = []
+  const domains = [
+    0,
+    0.25,
+    0.5,
+    0.6,
+    0.7,
+    0.75,
+    0.8,
+    0.82,
+    0.85,
+    0.87,
+    0.91,
+    0.92,
+    0.95,
+    0.99,
+    1
+  ]
+  for(let i = 0; i < 14; i++) {
+    if(position === cLength -1) {
+      inc = -1
+    }
+    if(position === 0) {
+      inc = 1
+    }
+    items.push(colors[position])
+    position += inc
+  }
+  items.push('black')
+  return chroma.scale(items).mode('hsl').domain(domains)
+}
 
+function makeScaleCycle (colors) {
+  const cLength = colors.length
+  const items = []
+  const domains = [
+    0,
+    0.25,
+    0.5,
+    0.6,
+    0.7,
+    0.75,
+    0.8,
+    0.82,
+    0.85,
+    0.87,
+    0.91,
+    0.92,
+    0.95,
+    0.99,
+    1
+  ]
+  for(let i = 0; i < 14; i++) {
+    items.push(colors[i % colors.length])
+  }
+  items.push('black')
+  return chroma.scale(items).mode('hsl').domain(domains)
+}
+
+async function draw() {
+  const lobster = makeScale(['#E24931','#CFB382','#BBE3D8','#8DCFCE','#102A44'])
+  const forest = makeScale(['#22766A','#83C047', '#F0F4CA','#C5A14E','#9F2F29'])
+  const forest2 = makeScaleCycle(['#22766A','#83C047', '#F0F4CA','#C5A14E','#9F2F29'])
+  const fire = makeScale(['white', 'lightyellow', 'yellow', 'red', 'black'])
+  const ocean2 = makeScale(['#ffffff','#d4e2d8','#31d4cb','#33afca','#378abf','#3067ac','#264890'])
+  const ocean3 = makeScaleCycle(['#ffffff','#d4e2d8','#31d4cb','#33afca','#378abf','#3067ac','#264890'])
+  const spectral = makeScale(['#cc0011','#f77105','#ffd600','#e0ff00','#acfe7a','#26e9ff','#007fff'])
   const scales = [
-    //forest
-    //chroma.scale(['white', 'lightyellow', 'yellow', 'red', 'black', 'red', 'yellow', 'red', 'black', 'red', 'yellow', 'red', 'black']).mode('hsl').domain([0,0.7,1]),
-    //ocean
-    chroma.scale(['white','dfd2c1', 'white', 'b7c0a5', '67d29e', '0fd4cb', '3884cf', '264890', '3884cf', '0fd4cb', '67d29e', 'b7c0a5', 'white','67d29e', '0fd4cb', '3884cf']).mode('hsl'),
-    //lobster
-    chroma.scale(['#E24931','#CFB382','#BBE3D8','#8DCFCE','#102A44','#8DCFCE','#BBE3D8']).mode('hsl').domain([0,0.7,1])
+    forest,
+    forest2,
+  //  fire,
+    ocean2,
+    ocean3
+    //lobster,
+    //spectral
   ]
 
   const [temps, histo] = buildMandleData(CANVAS_WIDTH, CANVAS_HEIGHT, CENTER, ZOOM)
@@ -224,4 +294,7 @@ function numberMap(i, min, max, smin, smax) {
   return p * sDist + smin
 }
 
+function weightAverage (n, w) {
+
+}
 draw()
