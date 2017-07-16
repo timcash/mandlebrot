@@ -31,12 +31,12 @@ const ln2 = ln(2)
 
 // julia
 // const ZOOM = 0.000006204954835888166
-// //const ZOOM = 0.000006202934835887166
-// const CENTER = [-1.7692336509013211,-0.0034128997612515775]
+const ZOOM = 0.000006202934835887166
+const CENTER = [-1.7692336509013211,-0.0034128997612515775]
 
 // fish
-let ZOOM = 0.0008523688595400003
-let CENTER = [0.36330877028148983, -0.31721691316595024]
+// let ZOOM = 0.0008523688595400003
+// let CENTER = [0.36330877028148983, -0.31721691316595024]
 //
 //Portal
 // let ZOOM = 0.00009282496880390604
@@ -61,6 +61,10 @@ let CENTER = [0.36330877028148983, -0.31721691316595024]
 // mandle center seahorses
 // const ZOOM = 1.851751637425243e-8
 // const CENTER = [-1.7692336411443383,-0.0034129130320693594]
+
+// long julia forest
+// const ZOOM = 6.014888640493153e-11
+// const CENTER = [0.35245792654678254,-0.5823515765137375]
 
 function loopMandle(c) {
   let x0 = c[0]
@@ -97,7 +101,7 @@ function buildMandleData(width, height, center, zoom) {
     for (let x = 0; x < width; x++) {
       const [a, b] = toComplexAtCenterAndZoom(x,y, width, height, center, zoom)
       const loops = loopMandle([a, b])
-      if (counter % 1000 === 0) console.log('Index', counter)
+      if (counter % 100000 === 0) console.log('Index', counter)
       histo[floor(loops)] += 1
       mData.push(loops)
       counter += 1
@@ -193,15 +197,23 @@ async function draw() {
   const ocean2 = makeScale(['#ffffff','#d4e2d8','#31d4cb','#33afca','#378abf','#3067ac','#264890'])
   const ocean3 = makeScaleCycle(['#ffffff','#d4e2d8','#31d4cb','#33afca','#378abf','#3067ac','#264890'])
   const spectral = makeScale(['#cc0011','#f77105','#ffd600','#e0ff00','#acfe7a','#26e9ff','#007fff'])
-  const scales = [
-    forest,
-    forest2,
-  //  fire,
-    ocean2,
-    ocean3
-    //lobster,
-    //spectral
-  ]
+  const scales = []
+  while(scales.length < 7) {
+    scales.push(
+      makeRandomScale(
+        ['#ffffff','#d4e2d8','#31d4cb','#33afca','#378abf','#3067ac','#264890'],
+        randomIntFromInterval(4,15)
+      )
+    )
+  }
+  while(scales.length < 14) {
+    scales.push(
+      makeRandomScale(
+        ['#cc0011','#f77105','#ffd600','#e0ff00','#acfe7a','#26e9ff','#007fff'],
+        randomIntFromInterval(4,15)
+      )
+    )
+  }
 
   const [temps, histo] = buildMandleData(CANVAS_WIDTH, CANVAS_HEIGHT, CENTER, ZOOM)
   const histoedData = histoTheData(temps, histo)
@@ -220,7 +232,7 @@ function color(c_scale, temps, histoedData) {
       const white = [255, 255, 255]
       if (error) reject(error.toString());
       for (let i = 0; i < histoedData.length; i ++) {
-        if (i % 1000 === 0) console.log('coloring', i)
+        if (i % 100000 === 0) console.log('coloring', i)
         const iters = temps[i]
         const temp = histoedData[i]
         let rgb = c_scale(temp).rgb()
@@ -297,4 +309,54 @@ function numberMap(i, min, max, smin, smax) {
 function weightAverage (n, w) {
 
 }
+
+
+function makeRandomScale (colors, size) {
+  const domains = randomDomainList(size)
+  let items = fillRandomFrom(colors, size)
+  //items[items.length -1] = 'black'
+  const modes = ['lch', 'lab', 'hsl']
+  const mode = modes[randomIntFromInterval(0,2)]
+  console.log('Domains', domains)
+  console.log('Colors', items)
+  console.log('Mode', mode)
+  return chroma.scale(items).mode(mode).correctLightness().domain(domains)
+}
+
+function cycleArray (a) {
+  const item0 = a.shift()
+  a.push(item0)
+  return a
+}
+
+function randomIntFromInterval(min,max)
+{
+    return Math.floor(Math.random()*(max-min+1)+min);
+}
+
+function getRandom(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+function fillRandomFrom(original, count) {
+  let final = []
+  while (final.length < count) {
+    const idx = randomIntFromInterval(0, original.length -1)
+    final.push(original[idx])
+  }
+  return final
+}
+
+function randomDomainList(size) {
+  let position = 0.0
+  let l = [0.0]
+  while (l.length < size - 2) {
+    const  newPosition = getRandom(position, 0.999)
+    l.push(newPosition)
+    position = newPosition
+  }
+  l.push(1.0)
+  return l
+}
+
 draw()
