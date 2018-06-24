@@ -3,5 +3,5 @@ This is a fun little program I used to exploring coloring algorithms on fractals
 # mandlebrot
 fractal plotting
 
-![alt text](https://photos.app.goo.gl/LNbAWh76Q6cwD59X9 "Green Forest")
+![Green Forest](https://github.com/timcash/mandlebrot/blob/master/green_forest_code.jpg "Green Forest")
 
